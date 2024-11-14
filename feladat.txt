@@ -1,0 +1,106 @@
+'''
+Fő Feladat: RPG Karakterkezelő Program
+
+Leírás: Írj egy programot, amely egy RPG (szerepjáték) karakterekből álló JSON fájlt használ. 
+A program töltse be a karaktereket, majd hozzon létre belőlük Python objektumokat. A karakterek különböző tulajdonságokkal rendelkeznek, 
+mint például név, szint, életerő, támadóerő és védekezés.
+
+Cél: A karakterek használatával tudj szimulálni egy egyszerű harcot.
+
+Lépések:
+
+1. Töltsd be a JSON adatokat:
+   - A JSON fájlt olvasd be, és alakítsd Python adatstruktúrává.
+
+2. Hozz létre egy Character osztályt:
+   - Minden karaktert egy Character osztály reprezentáljon.
+   - Az osztály tartalmazza a következő attribútumokat: név, szint, életerő, támadóerő, védekezés.
+   - Implementálj egy take_damage metódust, amely csökkenti a karakter életerejét egy adott sebzés alapján.
+
+3. Készíts harci logikát:
+   - Írj egy fight függvényt, amely két karakter objektumot vesz be, és kiszámítja a harcot.
+   - A harci logika legyen egyszerű: a támadó karakter támadóerejéből vond ki a védekező karakter védekezését, 
+     majd ezt a sebzést alkalmazd a védekező karakter életerejére a take_damage metódussal.
+
+4. Szimuláld a harcot:
+   - Két karaktert válassz ki a JSON adatbázisból, és szimulálj egy harcot közöttük, amíg valamelyik karakter életereje nullára csökken.
+'''
+
+
+
+import json
+
+# Step 1: Define the Character class (with a capital 'C')
+class Character:
+    def __init__(self, nev, szint, eletero, tamadoero, vedekezes):
+        self.nev = nev        # Name
+        self.szint = szint    # Level
+        self.eletero = eletero  # Health
+        self.tamadoero = tamadoero  # Attack Power
+        self.vedekezes = vedekezes  # Defense
+
+    def take_damage(self, damage):
+        """Reduces the health based on the damage taken."""
+        self.eletero -= damage
+        if self.eletero < 0:  # Ensure health does not go below 0
+            self.eletero = 0
+
+    def eletben(self):
+        """Checks if the character is still alive."""
+        return self.eletero > 0
+
+# Step 2: Load the JSON data from the file
+with open('kimeno.json', 'r') as file:
+    data = json.load(file)
+
+# Print the loaded data (for debugging)
+print(data)
+
+# Step 3: Get the character data from the JSON
+characters_data = data['characters']
+
+# Step 4: Create Character objects from the loaded JSON data
+characters = [Character(**char_data) for char_data in characters_data]
+
+# Step 5: Create the fight function
+def fight(character1, character2):
+    print(f"Starting fight between {character1.nev} and {character2.nev}!")
+
+    round_counter = 1
+    while character1.eletben() and character2.eletben():
+        print(f"\nRound {round_counter}:")
+        
+        # Character 1 attacks Character 2
+        attack_damage = max(0, character1.tamadoero - character2.vedekezes)
+        print(f"{character1.nev} attacks {character2.nev} for {attack_damage} damage!")
+        character2.take_damage(attack_damage)
+        
+        if not character2.eletben():
+            print(f"{character2.nev} has been defeated!")
+            break
+        
+        # Character 2 attacks Character 1
+        attack_damage = max(0, character2.tamadoero - character1.vedekezes)
+        print(f"{character2.nev} attacks {character1.nev} for {attack_damage} damage!")
+        character1.take_damage(attack_damage)
+        
+        if not character1.eletben():
+            print(f"{character1.nev} has been defeated!")
+            break
+        
+        round_counter += 1
+
+    # Display the outcome
+    if character1.eletben():
+        print(f"{character1.nev} wins the fight!")
+    elif character2.eletben():
+        print(f"{character2.nev} wins the fight!")
+
+# Step 6: Simulate a fight between the first two characters
+character1 = characters[0]
+character2 = characters[1]
+
+# Start the fight
+fight(character1, character2)
+
+
